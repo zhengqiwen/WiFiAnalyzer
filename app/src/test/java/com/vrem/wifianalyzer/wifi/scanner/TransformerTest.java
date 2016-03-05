@@ -93,14 +93,13 @@ public class TransformerTest {
         // execute
         WiFiConnection actual = fixture.transformWifiInfo(wifiInfo);
         // validate
-        assertEquals(SSID_1, actual.getSSID());
+        assertEquals(fixture.getDemoSSID(SSID_1), actual.getSSID());
         assertEquals(BSSID_1, actual.getBSSID());
-        assertEquals(IP_ADDRESS, actual.getIpAddress());
+        assertEquals(Transformer.IP_ADDRESS, actual.getIpAddress());
 
         verify(wifiInfo).getNetworkId();
         verify(wifiInfo).getSSID();
         verify(wifiInfo).getBSSID();
-        verify(wifiInfo).getIpAddress();
     }
 
     @Test
@@ -118,9 +117,9 @@ public class TransformerTest {
         List<String> actual = fixture.transformWifiConfigurations(wifiConfigurations);
         // validate
         assertEquals(wifiConfigurations.size(), actual.size());
-        assertEquals(SSID_1, actual.get(0));
-        assertEquals(SSID_2, actual.get(1));
-        assertEquals(SSID_3, actual.get(2));
+        assertEquals(fixture.getDemoSSID(SSID_1), actual.get(0));
+        assertEquals(fixture.getDemoSSID(SSID_2), actual.get(1));
+        assertEquals(fixture.getDemoSSID(SSID_3), actual.get(2));
     }
 
     @Test
@@ -131,9 +130,9 @@ public class TransformerTest {
         List<WiFiDetail> actual = fixture.transformScanResults(scanResults);
         // validate
         assertEquals(scanResults.size(), actual.size());
-        validateWiFiDetail(SSID_1, BSSID_1, actual.get(0));
-        validateWiFiDetail(SSID_2, BSSID_2, actual.get(1));
-        validateWiFiDetail(SSID_3, BSSID_3, actual.get(2));
+        validateWiFiDetail(fixture.getDemoSSID(SSID_1), BSSID_1, actual.get(0));
+        validateWiFiDetail(fixture.getDemoSSID(SSID_2), BSSID_2, actual.get(1));
+        validateWiFiDetail(fixture.getDemoSSID(SSID_3), BSSID_3, actual.get(2));
     }
 
     private void validateWiFiDetail(String SSID, String BSSID, WiFiDetail wiFiDetail) {
@@ -148,7 +147,7 @@ public class TransformerTest {
     @Test
     public void testWiFiData() throws Exception {
         // setup
-        WiFiConnection expectedWiFiConnection = new WiFiConnection(SSID_1, BSSID_1);
+        WiFiConnection expectedWiFiConnection = new WiFiConnection(fixture.getDemoSSID(SSID_1), BSSID_1);
         withScanResult();
         withWiFiConfiguration();
         withWiFiInfo();

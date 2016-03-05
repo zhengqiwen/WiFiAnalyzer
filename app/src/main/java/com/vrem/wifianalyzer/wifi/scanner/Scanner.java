@@ -47,7 +47,7 @@ public class Scanner {
         }
         if (wifiManager.startScan()) {
             cache.add(wifiManager.getScanResults());
-            WiFiData wiFiData = transformer.transformToWiFiData(cache.getScanResults(), wifiManager.getConnectionInfo(), wifiManager.getConfiguredNetworks());
+            WiFiData wiFiData = transformer.transformToWiFiData(wifiManager.getScanResults(), wifiManager.getConnectionInfo(), wifiManager.getConfiguredNetworks());
             for (String key : updateNotifiers.keySet()) {
                 UpdateNotifier updateNotifier = updateNotifiers.get(key);
                 mainContext.getLogger().info(this, "running notifier: " + key);
