@@ -19,8 +19,7 @@
     <string name="app_name">WiFi Analyzer</string>
     <string name="app_company_name">VREM Software Development</string>
     <string name="app_copyright">Copyright \u00A9 2015 - 2016</string>
-    <string name="app_license_name">Licensed under the Apache License, Version 2.0</string>
-    <string name="app_license_url">http://www.apache.org/licenses/LICENSE-2.0</string>
+    <string name="app_url">https://github.com/VREMSoftwareDevelopment/WifiAnalyzer</string>
     <!-- application end -->
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
@@ -39,7 +38,8 @@
     <string name="no_data">No Data</string>
 
     <string name="channel_rating_best">Best Channels:</string>
-    <string name="channel_rating_best_none">NONE</string>
+    <string name="channel_rating_best_none">None</string>
+    <string name="channel_rating_best_alternative">Try alternative WiFi Band</string>
 
     <string name="channel_rating_heading_rating">Channel Rating</string>
     <string name="channel_rating_heading_number">Channel Number</string>
@@ -85,12 +85,19 @@
     <!-- settings end -->
 
     <!-- about start -->
-    <string name="about_libraries_title">Used Libraries:</string>
+    <string name="about_license_title">License:</string>
+    <string name="about_license_name">Licensed under the Apache License, Version 2.0</string>
+    <string name="about_license_url">http://www.apache.org/licenses/LICENSE-2.0</string>
+    <string name="about_description_title">Description:</string>
+    <string name="about_description_text">Optimize your WiFi network, by checking WiFi network status, signal strength and identifying crowded channels using an open-source WiFi Analyzer for Android</string>
+    <string name="about_libraries_title">Libraries Used:</string>
     <string name="about_library_apache">Apache Commons</string>
     <string name="about_library_apache_url">https://commons.apache.org</string>
     <string name="about_library_graphview">Graph View</string>
     <string name="about_library_graphview_url">http://www.android-graphview.org</string>
     <string name="about_library_material">Material Design Icons</string>
     <string name="about_library_material_url">https://design.google.com/icons</string>
+    <string name="about_contributor_title">Contributors:</string>
+    <string name="about_contributor_list">Alex Orchard, Dan Light, Graham Foster, Michael Melo, Silviu Marcu, Vadim Karantayer</string>
     <!-- about end -->
 </resources>
