@@ -48,6 +48,7 @@ public class SettingsTest {
     @Mock private Context context;
     @Mock private Resources resources;
     @Mock private SharedPreferences sharedPreferences;
+    @Mock private SharedPreferences.Editor editor;
 
     private Settings fixture;
 
@@ -145,24 +146,6 @@ public class SettingsTest {
     }
 
     @Test
-    public void testWiFiBand() throws Exception {
-        // setup
-        String defaultValue = "some";
-        String key = "xyz";
-        WiFiBand expected = WiFiBand.GHZ_2;
-        withResourceKey(R.string.wifi_band_key, key);
-        when(resources.getString(R.string.wifi_band_default)).thenReturn(defaultValue);
-        when(sharedPreferences.getString(key, defaultValue)).thenReturn(expected.name());
-        // execute
-        WiFiBand actual = fixture.getWiFiBand();
-        // validate
-        assertEquals(expected, actual);
-        verifyResourceKey(R.string.wifi_band_key);
-        verify(resources).getString(R.string.wifi_band_default);
-        verify(sharedPreferences).getString(key, defaultValue);
-    }
-
-    @Test
     public void testThemeStyle() throws Exception {
         // setup
         String defaultValue = "some";
@@ -181,20 +164,78 @@ public class SettingsTest {
     }
 
     @Test
-    public void testGraphLegend() throws Exception {
+    public void testChannelGraphLegend() throws Exception {
         // setup
         String defaultValue = "some";
         String key = "xyz";
         GraphLegend expected = GraphLegend.RIGHT;
-        withResourceKey(R.string.graph_legend_key, key);
-        when(resources.getString(R.string.graph_legend_default)).thenReturn(defaultValue);
+        withResourceKey(R.string.channel_graph_legend_key, key);
+        when(resources.getString(R.string.channel_graph_legend_default)).thenReturn(defaultValue);
         when(sharedPreferences.getString(key, defaultValue)).thenReturn(expected.name());
         // execute
-        GraphLegend actual = fixture.getGraphLegend();
+        GraphLegend actual = fixture.getChannelGraphLegend();
         // validate
         assertEquals(expected, actual);
-        verifyResourceKey(R.string.graph_legend_key);
-        verify(resources).getString(R.string.graph_legend_default);
+        verifyResourceKey(R.string.channel_graph_legend_key);
+        verify(resources).getString(R.string.channel_graph_legend_default);
         verify(sharedPreferences).getString(key, defaultValue);
     }
+
+    @Test
+    public void testTimeGraphLegend() throws Exception {
+        // setup
+        String defaultValue = "some";
+        String key = "xyz";
+        GraphLegend expected = GraphLegend.RIGHT;
+        withResourceKey(R.string.time_graph_legend_key, key);
+        when(resources.getString(R.string.time_graph_legend_default)).thenReturn(defaultValue);
+        when(sharedPreferences.getString(key, defaultValue)).thenReturn(expected.name());
+        // execute
+        GraphLegend actual = fixture.getTimeGraphLegend();
+        // validate
+        assertEquals(expected, actual);
+        verifyResourceKey(R.string.time_graph_legend_key);
+        verify(resources).getString(R.string.time_graph_legend_default);
+        verify(sharedPreferences).getString(key, defaultValue);
+    }
+
+    @Test
+    public void testWiFiBand() throws Exception {
+        // setup
+        String defaultValue = "some";
+        String key = "xyz";
+        WiFiBand expected = WiFiBand.GHZ_2;
+        withWiFiBand(defaultValue, key, expected);
+        // execute
+        WiFiBand actual = fixture.getWiFiBand();
+        // validate
+        assertEquals(expected, actual);
+        verifyResourceKey(R.string.wifi_band_key);
+        verify(resources).getString(R.string.wifi_band_default);
+        verify(sharedPreferences).getString(key, defaultValue);
+    }
+
+    private void withWiFiBand(String defaultValue, String key, WiFiBand expected) {
+        withResourceKey(R.string.wifi_band_key, key);
+        when(resources.getString(R.string.wifi_band_default)).thenReturn(defaultValue);
+        when(sharedPreferences.getString(key, defaultValue)).thenReturn(expected.name());
+    }
+
+    @Test
+    public void testToggleWiFiBand() throws Exception {
+        // setup
+        String defaultValue = "some";
+        String key = "xyz";
+        WiFiBand wiFiBand = WiFiBand.GHZ_2;
+        withWiFiBand(defaultValue, key, wiFiBand);
+        when(sharedPreferences.edit()).thenReturn(editor);
+        withResourceKey(R.string.wifi_band_key, wiFiBand.getBand());
+        // execute
+        fixture.toggleWiFiBand();
+        // validate
+        verify(sharedPreferences).edit();
+        verify(editor).putString(wiFiBand.getBand(), wiFiBand.toggle().getBand());
+        verify(editor).commit();
+    }
+
 }

@@ -59,10 +59,16 @@ public class Settings {
         return GroupBy.find(getSharedPreferences().getString(context.getString(R.string.group_by_key), defaultValue));
     }
 
-    public GraphLegend getGraphLegend() {
+    public GraphLegend getChannelGraphLegend() {
         Context context = mainContext.getContext();
-        String defaultValue = context.getResources().getString(R.string.graph_legend_default);
-        return GraphLegend.find(getSharedPreferences().getString(context.getString(R.string.graph_legend_key), defaultValue));
+        String defaultValue = context.getResources().getString(R.string.channel_graph_legend_default);
+        return GraphLegend.find(getSharedPreferences().getString(context.getString(R.string.channel_graph_legend_key), defaultValue), GraphLegend.HIDE);
+    }
+
+    public GraphLegend getTimeGraphLegend() {
+        Context context = mainContext.getContext();
+        String defaultValue = context.getResources().getString(R.string.time_graph_legend_default);
+        return GraphLegend.find(getSharedPreferences().getString(context.getString(R.string.time_graph_legend_key), defaultValue), GraphLegend.LEFT);
     }
 
     public WiFiBand getWiFiBand() {
@@ -75,5 +81,11 @@ public class Settings {
         Context context = mainContext.getContext();
         String defaultValue = context.getResources().getString(R.string.theme_default);
         return ThemeStyle.find(getSharedPreferences().getString(context.getString(R.string.theme_key), defaultValue));
+    }
+
+    public void toggleWiFiBand() {
+        SharedPreferences.Editor editor = getSharedPreferences().edit();
+        editor.putString(mainContext.getContext().getString(R.string.wifi_band_key), getWiFiBand().toggle().getBand());
+        editor.commit();
     }
 }

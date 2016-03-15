@@ -16,15 +16,20 @@
 
 package com.vrem.wifianalyzer.wifi.graph;
 
+import android.app.Dialog;
 import android.support.annotation.NonNull;
 import android.view.View;
 
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.LegendRenderer;
 import com.jjoe64.graphview.series.DataPoint;
-import com.jjoe64.graphview.series.LineGraphSeries;
+import com.jjoe64.graphview.series.DataPointInterface;
+import com.jjoe64.graphview.series.OnDataPointTapListener;
+import com.jjoe64.graphview.series.Series;
 import com.vrem.wifianalyzer.MainContext;
+import com.vrem.wifianalyzer.wifi.AccessPointsDetail;
 import com.vrem.wifianalyzer.wifi.model.WiFiBand;
+import com.vrem.wifianalyzer.wifi.model.WiFiDetail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,57 +37,46 @@ import java.util.Map;
 import java.util.Set;
 
 class GraphViewUtils {
+    private static final float TEXT_SIZE_ADJUSTMENT = 0.75f;
     private final MainContext mainContext = MainContext.INSTANCE;
     private final GraphView graphView;
-    private final Map<String, LineGraphSeries<DataPoint>> seriesMap;
+    private final Map<WiFiDetail, ? extends Series<DataPoint>> seriesMap;
     private GraphLegend graphLegend;
 
-    public GraphViewUtils(@NonNull GraphView graphView, @NonNull Map<String, LineGraphSeries<DataPoint>> seriesMap) {
+    public GraphViewUtils(@NonNull GraphView graphView, @NonNull Map<WiFiDetail, ? extends Series<DataPoint>> seriesMap,
+                          @NonNull GraphLegend graphLegend) {
         this.graphView = graphView;
         this.seriesMap = seriesMap;
-        this.graphLegend = mainContext.getSettings().getGraphLegend();
+        this.graphLegend = graphLegend;
     }
 
-    void updateSeries(@NonNull Set<String> newSeries) {
-        List<String> remove = new ArrayList<>();
-        for (String title : seriesMap.keySet()) {
-            if (!newSeries.contains(title)) {
-                graphView.removeSeries(seriesMap.get(title));
-                remove.add(title);
+    void updateSeries(@NonNull Set<WiFiDetail> newSeries) {
+        List<WiFiDetail> remove = new ArrayList<>();
+        for (WiFiDetail wiFiDetail : seriesMap.keySet()) {
+            if (!newSeries.contains(wiFiDetail)) {
+                graphView.removeSeries(seriesMap.get(wiFiDetail));
+                remove.add(wiFiDetail);
             }
         }
-        for (String title : remove) {
-            seriesMap.remove(title);
+        for (WiFiDetail wiFiDetail : remove) {
+            seriesMap.remove(wiFiDetail);
         }
     }
 
-    void updateLegend() {
-        resetLegendRenderer();
+    void updateLegend(@NonNull GraphLegend graphLegend) {
+        resetLegendRenderer(graphLegend);
         LegendRenderer legendRenderer = graphView.getLegendRenderer();
-        legendRenderer.setVisible(isVisible());
         legendRenderer.resetStyles();
         legendRenderer.setWidth(0);
-        positionLegend(legendRenderer);
-        legendRenderer.setTextSize(legendRenderer.getTextSize() * 0.50f);
+        legendRenderer.setTextSize(legendRenderer.getTextSize() * TEXT_SIZE_ADJUSTMENT);
+        graphLegend.display(legendRenderer);
     }
 
-    private void positionLegend(LegendRenderer legendRenderer) {
-        if (GraphLegend.RIGHT.equals(graphLegend)) {
-            legendRenderer.setAlign(LegendRenderer.LegendAlign.TOP);
-        } else if (GraphLegend.LEFT.equals(graphLegend)) {
-            legendRenderer.setFixedPosition(0, 0);
-        }
-    }
-
-    private boolean isVisible() {
-        return !GraphLegend.HIDE.equals(this.graphLegend);
-    }
-
-    private void resetLegendRenderer() {
-        if (!graphLegend.equals(mainContext.getSettings().getGraphLegend())) {
+    private void resetLegendRenderer(@NonNull GraphLegend graphLegend) {
+        if (!this.graphLegend.equals(graphLegend)) {
             LegendRenderer legendRenderer = new LegendRenderer(graphView);
             graphView.setLegendRenderer(legendRenderer);
-            graphLegend = mainContext.getSettings().getGraphLegend();
+            this.graphLegend = graphLegend;
         }
     }
 
@@ -90,4 +84,21 @@ class GraphViewUtils {
         graphView.setVisibility(wiFiBand.equals(mainContext.getSettings().getWiFiBand()) ? View.VISIBLE : View.GONE);
     }
 
+    public void setOnDataPointTapListener(Series<DataPoint> series) {
+        series.setOnDataPointTapListener(new GraphTapListener());
+    }
+
+    private class GraphTapListener implements OnDataPointTapListener {
+        @Override
+        public void onTap(@NonNull Series series, @NonNull DataPointInterface dataPoint) {
+            for (WiFiDetail wiFiDetail : seriesMap.keySet()) {
+                Series<DataPoint> channelGraphSeries = seriesMap.get(wiFiDetail);
+                if (series == channelGraphSeries) {
+                    Dialog dialog = new AccessPointsDetail().popupDialog(mainContext.getContext(), mainContext.getLayoutInflater(), wiFiDetail);
+                    dialog.show();
+                    return;
+                }
+            }
+        }
+    }
 }

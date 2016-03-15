@@ -95,6 +95,14 @@ public enum WiFiBand {
         return results;
     }
 
+    public int getFrequencyStart() {
+        return channelFrequencyStart;
+    }
+
+    public int getFrequencyEnd() {
+        return channelFrequencyEnd;
+    }
+
     public int getChannelFirst() {
         return channelFirst;
     }
@@ -113,5 +121,9 @@ public enum WiFiBand {
 
     public String getBand() {
         return band;
+    }
+
+    public WiFiBand toggle() {
+        return WiFiBand.GHZ_2.equals(this) ? WiFiBand.GHZ_5 : WiFiBand.GHZ_2;
     }
 }

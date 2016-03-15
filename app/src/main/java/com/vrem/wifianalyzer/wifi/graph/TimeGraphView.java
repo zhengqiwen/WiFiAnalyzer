@@ -38,7 +38,7 @@ class TimeGraphView {
 
     private final WiFiBand wiFiBand;
     private final GraphView graphView;
-    private final Map<String, LineGraphSeries<DataPoint>> seriesMap;
+    private final Map<WiFiDetail, LineGraphSeries<DataPoint>> seriesMap;
     private final GraphViewUtils graphViewUtils;
     private int scanCount;
     private GraphColor currentGraphColor;
@@ -47,7 +47,7 @@ class TimeGraphView {
         this.wiFiBand = wiFiBand;
         this.graphView = makeGraphView(graphViewBuilder, resources);
         this.seriesMap = new TreeMap<>();
-        this.graphViewUtils = new GraphViewUtils(graphView, seriesMap);
+        this.graphViewUtils = new GraphViewUtils(graphView, seriesMap, mainContext.getSettings().getTimeGraphLegend());
         this.scanCount = 0;
         this.currentGraphColor = null;
     }
@@ -70,34 +70,34 @@ class TimeGraphView {
     }
 
     void update(@NonNull WiFiData wiFiData) {
-        Set<String> newSeries = new TreeSet<>();
+        Set<WiFiDetail> newSeries = new TreeSet<>();
         for (WiFiDetail wiFiDetail : wiFiData.getWiFiDetails(wiFiBand, mainContext.getSettings().getSortBy())) {
             addData(newSeries, wiFiDetail);
         }
         graphViewUtils.updateSeries(newSeries);
-        graphViewUtils.updateLegend();
+        graphViewUtils.updateLegend(mainContext.getSettings().getTimeGraphLegend());
         graphViewUtils.setVisibility(wiFiBand);
         scanCount++;
     }
 
-    private void addData(@NonNull Set<String> newSeries, @NonNull WiFiDetail wiFiDetail) {
-        String key = wiFiDetail.getTitle();
-        newSeries.add(key);
-        LineGraphSeries<DataPoint> series = seriesMap.get(key);
+    private void addData(@NonNull Set<WiFiDetail> newSeries, @NonNull WiFiDetail wiFiDetail) {
+        newSeries.add(wiFiDetail);
+        LineGraphSeries<DataPoint> series = seriesMap.get(wiFiDetail);
         if (series == null) {
             series = new LineGraphSeries<>();
             setSeriesOptions(series, wiFiDetail);
             graphView.addSeries(series);
-            seriesMap.put(key, series);
+            seriesMap.put(wiFiDetail, series);
         }
         series.appendData(new DataPoint(scanCount, wiFiDetail.getWiFiSignal().getLevel()), true, scanCount + 1);
+        graphViewUtils.setOnDataPointTapListener(series);
     }
 
     private void setSeriesOptions(@NonNull LineGraphSeries<DataPoint> series, @NonNull WiFiDetail wiFiDetail) {
         currentGraphColor = GraphColor.findColor(currentGraphColor);
         series.setColor(currentGraphColor.getPrimary());
         series.setDrawBackground(false);
-        series.setTitle(wiFiDetail.getTitle() + " " + wiFiDetail.getWiFiSignal().getChannel());
+        series.setTitle(wiFiDetail.getSSID());
     }
 
 }

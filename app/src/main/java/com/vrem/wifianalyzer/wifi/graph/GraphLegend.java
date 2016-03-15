@@ -16,16 +16,57 @@
 
 package com.vrem.wifianalyzer.wifi.graph;
 
-public enum GraphLegend {
-    LEFT,
-    RIGHT,
-    HIDE;
+import android.support.annotation.NonNull;
 
-    public static GraphLegend find(String value) {
+import com.jjoe64.graphview.LegendRenderer;
+
+public enum GraphLegend {
+    LEFT(new DisplayLeft()),
+    RIGHT(new DisplayRight()),
+    HIDE(new DisplayNone());
+
+    private Display display;
+
+    GraphLegend(Display display) {
+        this.display = display;
+    }
+
+    public static GraphLegend find(String value, @NonNull GraphLegend defaultValue) {
         try {
             return valueOf(value.toUpperCase());
         } catch (Exception e) {
-            return GraphLegend.LEFT;
+            return defaultValue;
+        }
+    }
+
+    public void display(LegendRenderer legendRenderer) {
+        display.display(legendRenderer);
+    }
+
+    private interface Display {
+        void display(LegendRenderer legendRenderer);
+    }
+
+    private static class DisplayNone implements Display {
+        @Override
+        public void display(LegendRenderer legendRenderer) {
+            legendRenderer.setVisible(false);
+        }
+    }
+
+    private static class DisplayLeft implements Display {
+        @Override
+        public void display(LegendRenderer legendRenderer) {
+            legendRenderer.setVisible(true);
+            legendRenderer.setFixedPosition(0, 0);
+        }
+    }
+
+    private static class DisplayRight implements Display {
+        @Override
+        public void display(LegendRenderer legendRenderer) {
+            legendRenderer.setVisible(true);
+            legendRenderer.setAlign(LegendRenderer.LegendAlign.TOP);
         }
     }
 

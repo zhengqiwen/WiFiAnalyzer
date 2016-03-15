@@ -21,13 +21,14 @@ import android.support.annotation.NonNull;
 
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
-import com.jjoe64.graphview.series.LineGraphSeries;
 import com.vrem.wifianalyzer.MainContext;
 import com.vrem.wifianalyzer.R;
 import com.vrem.wifianalyzer.wifi.model.WiFiBand;
 import com.vrem.wifianalyzer.wifi.model.WiFiData;
 import com.vrem.wifianalyzer.wifi.model.WiFiDetail;
 import com.vrem.wifianalyzer.wifi.model.WiFiSignal;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
 import java.util.Set;
@@ -39,18 +40,17 @@ class ChannelGraphView {
 
     private final WiFiBand wiFiBand;
     private final GraphView graphView;
-    private final Map<String, LineGraphSeries<DataPoint>> seriesMap;
+    private final Map<WiFiDetail, ChannelGraphSeries<DataPoint>> seriesMap;
     private final GraphViewUtils graphViewUtils;
     private GraphColor currentGraphColor;
 
     private ChannelGraphView(@NonNull GraphViewBuilder graphViewBuilder, @NonNull Resources resources, @NonNull WiFiBand wiFiBand) {
-        boolean options = WiFiBand.GHZ_5.equals(wiFiBand);
         this.wiFiBand = wiFiBand;
-        this.graphView = makeGraphView(graphViewBuilder, resources, this.wiFiBand, options);
+        this.graphView = makeGraphView(graphViewBuilder, resources, this.wiFiBand);
         this.seriesMap = new TreeMap<>();
-        this.graphViewUtils = new GraphViewUtils(graphView, seriesMap);
+        this.graphViewUtils = new GraphViewUtils(graphView, seriesMap, mainContext.getSettings().getChannelGraphLegend());
         this.currentGraphColor = null;
-        if (options) {
+        if (is5GHZ()) {
             addDefaultsSeries(graphView, wiFiBand);
         }
     }
@@ -63,50 +63,49 @@ class ChannelGraphView {
         return new ChannelGraphView(graphViewBuilder, resources, WiFiBand.GHZ_5);
     }
 
-    private GraphView makeGraphView(@NonNull GraphViewBuilder graphViewBuilder, @NonNull Resources resources, @NonNull WiFiBand wiFiBand, boolean options) {
+    private GraphView makeGraphView(@NonNull GraphViewBuilder graphViewBuilder, @NonNull Resources resources, @NonNull WiFiBand wiFiBand) {
         int minX = wiFiBand.getChannelFirstHidden();
         int maxX = minX + GraphViewBuilder.CNT_X - 1;
 
         return graphViewBuilder
-                .setLabelFormatter(new AxisLabel(wiFiBand.getChannelFirst(), wiFiBand.getChannelLast()).setEvenOnly(options))
+                .setLabelFormatter(new AxisLabel(wiFiBand.getChannelFirst(), wiFiBand.getChannelLast()).setEvenOnly(is5GHZ()))
                 .setVerticalTitle(resources.getString(R.string.graph_axis_y))
                 .setHorizontalTitle(resources.getString(R.string.graph_channel_axis_x))
-                .setScrollable(options)
+                .setScrollable(is5GHZ())
                 .setMinX(minX)
                 .setMaxX(maxX)
                 .build();
     }
 
     void update(@NonNull WiFiData wiFiData) {
-        Set<String> newSeries = new TreeSet<>();
+        Set<WiFiDetail> newSeries = new TreeSet<>();
         for (WiFiDetail wiFiDetail : wiFiData.getWiFiDetails(wiFiBand, mainContext.getSettings().getSortBy())) {
             addData(newSeries, wiFiDetail);
         }
         graphViewUtils.updateSeries(newSeries);
-        graphViewUtils.updateLegend();
+        graphViewUtils.updateLegend(mainContext.getSettings().getChannelGraphLegend());
         graphViewUtils.setVisibility(wiFiBand);
     }
 
-    private void addData(@NonNull Set<String> newSeries, @NonNull WiFiDetail wiFiDetail) {
-        String key = wiFiDetail.getTitle();
-        newSeries.add(key);
-        LineGraphSeries<DataPoint> series = seriesMap.get(key);
+    private void addData(@NonNull Set<WiFiDetail> newSeries, @NonNull WiFiDetail wiFiDetail) {
+        newSeries.add(wiFiDetail);
+        ChannelGraphSeries<DataPoint> series = seriesMap.get(wiFiDetail);
         if (series == null) {
-            series = new LineGraphSeries<>(createDataPoints(wiFiDetail));
+            series = new ChannelGraphSeries<>(createDataPoints(wiFiDetail));
             setSeriesOptions(series, wiFiDetail);
             graphView.addSeries(series);
-            seriesMap.put(key, series);
+            seriesMap.put(wiFiDetail, series);
         } else {
             series.resetData(createDataPoints(wiFiDetail));
         }
     }
 
-    private void setSeriesOptions(@NonNull LineGraphSeries<DataPoint> series, @NonNull WiFiDetail wiFiDetail) {
+    private void setSeriesOptions(@NonNull ChannelGraphSeries<DataPoint> series, @NonNull WiFiDetail wiFiDetail) {
         currentGraphColor = GraphColor.findColor(currentGraphColor);
         series.setColor(currentGraphColor.getPrimary());
         series.setBackgroundColor(currentGraphColor.getBackground());
-        series.setDrawBackground(true);
-        series.setTitle(wiFiDetail.getTitle() + " " + wiFiDetail.getWiFiSignal().getChannel());
+        series.setTitle(wiFiDetail.getSSID());
+        graphViewUtils.setOnDataPointTapListener(series);
     }
 
     private DataPoint[] createDataPoints(@NonNull WiFiDetail wiFiDetail) {
@@ -130,11 +129,14 @@ class ChannelGraphView {
                 new DataPoint(wiFiBand.getChannelLastHidden(), GraphViewBuilder.MIN_Y)
         };
 
-        LineGraphSeries<DataPoint> series = new LineGraphSeries<>(dataPoints);
+        ChannelGraphSeries<DataPoint> series = new ChannelGraphSeries<>(dataPoints);
         series.setColor(GraphColor.TRANSPARENT.getPrimary());
-        series.setDrawBackground(false);
         series.setThickness(0);
-        series.setTitle("");
+        series.setTitle(StringUtils.EMPTY);
         graphView.addSeries(series);
+    }
+
+    private boolean is5GHZ() {
+        return WiFiBand.GHZ_5.equals(wiFiBand);
     }
 }

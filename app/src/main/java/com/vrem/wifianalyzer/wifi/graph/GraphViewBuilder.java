@@ -87,7 +87,6 @@ class GraphViewBuilder {
 
     private void setViewPort(@NonNull Viewport viewport) {
         viewport.setScrollable(scrollable);
-        viewport.setScalable(false);
 
         viewport.setYAxisBoundsManual(true);
         viewport.setMinY(MIN_Y);
