@@ -71,5 +71,6 @@
     <string name="about_library_graph_view">Просмотр Диаграммы</string>
     <string name="about_library_material">Материал Дизайн Иконки</string>
     <string name="about_contributor_title">Авторы:</string>
+	<string name="hello_world"></string>
     <!-- about end -->
 </resources>
