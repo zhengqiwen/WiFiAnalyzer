@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WiFi-Analysator</string>
+    <string name="navigation_drawer_open">Offene Navigationsschublade</string>
+    <string name="app_copyright">Copyright © 2015 - 2016</string>
+    <string name="app_company_name">VREM Software-Entwicklung</string>
+</resources>
